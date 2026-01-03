@@ -1,6 +1,8 @@
 import * as React from "react"
 import type {
   ExecutionState,
+  FileOutput,
+  NodeOutput,
   NodeExecutionStatus,
 } from "@/components/graph/execution-context"
 import { getComfyClientId } from "@/lib/comfy/client-id"
@@ -19,6 +21,7 @@ const EMPTY_STATE: ExecutionState = {
   nodeStatuses: {},
   nodeProgress: {},
   nodeErrors: {},
+  nodeOutputs: {},
 }
 
 const toWsUrl = (apiBase: string, clientId: string) => {
@@ -79,6 +82,49 @@ const getString = (value: Record<string, unknown> | null, key: string) => {
 const getNumber = (value: Record<string, unknown> | null, key: string) => {
   const raw = value?.[key]
   return typeof raw === "number" ? raw : null
+}
+
+const parseFileOutputs = (value: unknown): FileOutput[] | null => {
+  if (!Array.isArray(value)) {
+    return null
+  }
+  const results: FileOutput[] = []
+  for (const entry of value) {
+    const record = asRecord(entry)
+    if (!record) {
+      continue
+    }
+    const filename = getString(record, "filename")
+    if (!filename) {
+      continue
+    }
+    results.push({
+      filename,
+      subfolder: getString(record, "subfolder"),
+      type: getString(record, "type"),
+    })
+  }
+  return results.length > 0 ? results : null
+}
+
+const parseNodeOutput = (value: unknown): NodeOutput | null => {
+  const outputRecord = asRecord(value)
+  if (!outputRecord) {
+    return null
+  }
+  const images = parseFileOutputs(outputRecord.images)
+  const latents = parseFileOutputs(outputRecord.latents)
+  if (!images && !latents) {
+    return null
+  }
+  const output: NodeOutput = {}
+  if (images) {
+    output.images = images
+  }
+  if (latents) {
+    output.latents = latents
+  }
+  return output
 }
 
 export const useExecutionMonitor = ({ apiBase }: UseExecutionMonitorArgs) => {
@@ -242,12 +288,22 @@ export const useExecutionMonitor = ({ apiBase }: UseExecutionMonitorArgs) => {
           if (!resolved) {
             return
           }
+          const output = parseNodeOutput(payloadRecord?.output)
           setState((prev) => ({
             ...prev,
             nodeStatuses: {
               ...prev.nodeStatuses,
               [resolved]: mergeStatus(prev.nodeStatuses[resolved], "completed"),
             },
+            nodeOutputs: (() => {
+              const nextOutputs = { ...prev.nodeOutputs }
+              if (output) {
+                nextOutputs[resolved] = output
+              } else {
+                delete nextOutputs[resolved]
+              }
+              return nextOutputs
+            })(),
           }))
           return
         }

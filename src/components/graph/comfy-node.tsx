@@ -8,7 +8,7 @@ import {
   useReactFlow,
 } from "@xyflow/react"
 import * as React from "react"
-import { HANDLE_OFFSET } from "@/components/graph/constants"
+import { API_BASE, HANDLE_OFFSET } from "@/components/graph/constants"
 import { ExecutionStateContext } from "@/components/graph/execution-context"
 import {
   renderControlAfterGenerateWidget,
@@ -20,6 +20,7 @@ import {
   type NodeSchemaMap,
   type WidgetValue,
 } from "@/lib/comfy/objectInfo"
+import { buildViewUrl } from "@/lib/comfy/view-url"
 import { cn } from "@/lib/utils"
 
 export type ComfyNodeData = {
@@ -64,6 +65,9 @@ export function ComfyNode({ data, id }: NodeProps<ComfyFlowNode>) {
   const nodeStatus = executionState?.nodeStatuses[id]
   const nodeProgress = executionState?.nodeProgress[id]
   const nodeError = executionState?.nodeErrors[id]
+  const nodeOutputs = executionState?.nodeOutputs[id]
+  const outputImages =
+    schema?.isOutputNode && nodeOutputs?.images ? nodeOutputs.images : []
   const progressPercent =
     nodeProgress && nodeProgress.max > 0
       ? Math.min(100, (nodeProgress.value / nodeProgress.max) * 100)
@@ -259,6 +263,60 @@ export function ComfyNode({ data, id }: NodeProps<ComfyFlowNode>) {
             className="h-full rounded-full bg-slate-400"
             style={{ width: `${progressPercent}%` }}
           />
+        </div>
+      ) : null}
+      {outputImages.length > 0 ? (
+        <div className="mt-3 border-t border-slate-100 pt-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            Output
+          </div>
+          <div
+            className={cn(
+              "mt-2 grid gap-2",
+              outputImages.length > 1 ? "grid-cols-2" : "grid-cols-1",
+            )}
+          >
+            {outputImages.map((image, index) => {
+              const previewUrl = buildViewUrl({
+                apiBase: API_BASE,
+                image,
+                preview: "webp;90",
+              })
+              const fullUrl = buildViewUrl({ apiBase: API_BASE, image })
+              if (!previewUrl) {
+                return null
+              }
+              const imageElement = (
+                <img
+                  src={previewUrl}
+                  alt={`Output ${index + 1}`}
+                  className="block h-24 w-full object-contain"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )
+              const containerClassName =
+                "overflow-hidden rounded-md border border-slate-200 bg-slate-50"
+              if (fullUrl) {
+                return (
+                  <a
+                    key={`${image.filename}-${index}`}
+                    href={fullUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={containerClassName}
+                  >
+                    {imageElement}
+                  </a>
+                )
+              }
+              return (
+                <div key={`${image.filename}-${index}`} className={containerClassName}>
+                  {imageElement}
+                </div>
+              )
+            })}
+          </div>
         </div>
       ) : null}
     </div>

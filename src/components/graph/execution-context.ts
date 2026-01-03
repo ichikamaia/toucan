@@ -19,6 +19,17 @@ export type NodeProgress = {
   max: number
 }
 
+export type FileOutput = {
+  filename: string
+  subfolder?: string | null
+  type?: string | null
+}
+
+export type NodeOutput = {
+  images?: FileOutput[]
+  latents?: FileOutput[]
+}
+
 export type ExecutionState = {
   phase: ExecutionPhase
   promptId: string | null
@@ -28,6 +39,7 @@ export type ExecutionState = {
   nodeStatuses: Record<string, NodeExecutionStatus>
   nodeProgress: Record<string, NodeProgress>
   nodeErrors: Record<string, string>
+  nodeOutputs: Record<string, NodeOutput>
 }
 
 export const ExecutionStateContext = React.createContext<ExecutionState | null>(
