@@ -27,7 +27,7 @@ Use `pnpm` for all workflows:
 - There is no automated test runner configured yet.
 - If you add tests, colocate under `src/**/__tests__` or use `*.test.ts(x)` naming.
 - Add a `package.json` script to run new tests and document it in this file.
-- Run `pnpm lint` and `pnpm typecheck` frequently.
+- Run `pnpm lint`, `pnpm format`, and `pnpm typecheck` frequently.
 
 ## Commit & Pull Request Guidelines
 - Recent commits use short, imperative summaries (e.g., "add backend info doc").
