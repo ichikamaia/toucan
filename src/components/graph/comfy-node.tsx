@@ -102,7 +102,7 @@ export function ComfyNode({ data, id }: NodeProps<ComfyFlowNode>) {
       />
     )
     const containerClassName =
-      "overflow-hidden rounded-md border border-slate-200 bg-slate-50"
+      "overflow-hidden rounded-md bg-slate-50"
     const content = fullUrl ? (
       <a
         href={fullUrl}
