@@ -21,6 +21,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
+      - run: pnpm exec playwright install --with-deps
       - run: pnpm test
-      - run: pnpm playwright install --with-deps
-      - run: pnpm playwright test
+      - run: pnpm exec playwright test
