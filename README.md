@@ -23,6 +23,20 @@ python main.py --front-end-version ichikamaia/toucan@prerelease
 
 an unobtrusive, lightweight comfyui client that lets you do your best work.
 
+## development
+
+Start ComfyUI first, then run the frontend dev server:
+
+in the comfyui folder
+```bash
+python main.py --listen 127.0.0.1 --port 8188 --enable-cors-header http://localhost:3000
+```
+
+in the toucan folder
+```bash
+pnpm dev
+```
+
 ## attributions
 
 this project is only made possible with the great work done by the [React Flow](https://reactflow.dev/) team.
